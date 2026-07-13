@@ -18,6 +18,7 @@ class DoraWeightEvaluator:
         self.model = None
         self.pipeline = None
 
+
     def build_dora_model(self, r, alpha):
         transformer = SD3Transformer2DModel.from_pretrained(
             self.base_model,
@@ -37,3 +38,25 @@ class DoraWeightEvaluator:
         self.model = get_peft_model(transformer, dora_config)
         self.model.to(self.device)
         return self.model
+    
+
+    def save_dora_weights(self, save_directory=any):
+        if self.model is None:
+            raise ValueError("저장할 모델 없음.")
+        
+        os.makedirs(save_directory, exist_ok=True)
+        self.model.save_pretrained(save_directory)
+
+
+    def load_dora_model(self, dora_path):
+        self.pipeline = StableDiffusion3Pipeline.from_pretrained(
+            self.base_model,
+            torch_dtype=torch.bfloat16
+        )
+        
+        self.pipeline.transformer = PeftModel.from_pretrained(
+            self.pipeline.transformer,
+            dora_path
+        )
+
+        print("DoRA 가중치 융합 완료.")
