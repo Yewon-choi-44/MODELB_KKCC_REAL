@@ -58,6 +58,6 @@ class auto_Caption:
 
 if __name__ == "__main__":
     sample = auto_Caption()
-    sample.generate_captions("../") #경로 추후 수정
+    sample.generate_captions("../mvtec_ad_2/can") #경로 추후 수정
     sample.create_diffusers_metadata()
 

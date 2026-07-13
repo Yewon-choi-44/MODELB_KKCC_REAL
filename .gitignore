@@ -3,10 +3,13 @@
 __pycache__/
 *.py[cod]
 *$py.class
-main.py
+# main.py
 
 .idea/
 .vscode/
 .DS_Store
 
 mvtec_ad_2
+preprocessing
+data.py
+whole_preprocess.py
