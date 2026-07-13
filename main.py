@@ -1,6 +1,11 @@
-def main():
-    print("Hello from modelb-kkcc-real!")
+from preprocessing import padding ,captioning, dora_weight
 
 
-if __name__ == "__main__":
-    main()
+
+
+# def main():
+#     print("Hello from modelb-kkcc-real!")
+
+
+# if __name__ == "__main__":
+#     main()
