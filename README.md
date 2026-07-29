@@ -585,18 +585,18 @@ root = 'D:/KKCC_Project'           # 예: 로컬 Windows 환경
 
 ### 파이프라인 A — SD 3.5 기반 증강
 
-```
+`
 bash
 python main.py
-````
+`
 
 실행 후 프롬프트가 나타나면 품목명을 입력합니다.
 
-````
+`
 이미지 증강할 품목을 선택하시오.(all = 모든 품목 / object_name = 해당 품목
 > all          # 모든 품목 실행
 > can          # can 품목만 실행
-```
+`
 
 ---
 
