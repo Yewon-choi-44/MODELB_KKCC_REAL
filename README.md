@@ -37,16 +37,17 @@
 
 이 프로젝트는 다음 두 가지 방식으로 **결함 이미지를 인공적으로 합성·증강**합니다.
 
+```
 | 방식 | 설명 | 파이프라인 |
 |------|------|-----------|
 | **SD 3.5 기반 이미지 변환** | 정상 이미지를 Stable Diffusion 3.5 로 결함 이미지로 변환 | main.py |
 | **2단계 하이브리드 물리·AI 합성** | 물리 시뮬레이션으로 결함 형태를 먼저 만들고 AI로 사실감 추가 | hybrid_runner.py |
-
+```
 ---
 
 ## 2. 시스템 전체 구조
 
-`
+```
 [입력 : MVTec AD 1·2 원본 이미지]
          │
          ▼
@@ -85,13 +86,13 @@
          │
          ▼
 [출력 : 합성 결함 이미지 + GT 마스크 쌍]
-`
+```
 
 ---
 
 ## 3. 디렉터리 구조
 
-`
+```
 DataAugmentation/
 │
 ├── main.py                          # [진입점 A] SD 3.5 기반 증강 실행
@@ -115,7 +116,7 @@ DataAugmentation/
 ├── later/                           # 추후 구현 예정 모듈 (SAM, SDXL 인페인팅 등)
 ├── conversation_summary.md          # 프로젝트 대화 요약
 └── README.md                        # 현재 파일
-`
+```
 
 > ← NEW 표시가 붙은 항목은 기존 코드를 수정하지 않고 새로 추가된 파일입니다.
 
@@ -125,7 +126,7 @@ DataAugmentation/
 
 ### MVTec AD 1
 공장 생산 품목 15종의 정상·결함 이미지가 포함된 표준 이상 탐지 벤치마크 데이터셋입니다.
-
+```
 | 품목 목록 |
 |-----------|
 | bottle, cable, capsule, carpet, grid, hazelnut, leather, metal_nut, pill, screw, tile, toothbrush, transistor, wood, zipper |
@@ -133,26 +134,28 @@ DataAugmentation/
 - 학습 데이터(	rain/good/): 정상 이미지만 포함
 - 테스트 데이터(	est/): 정상 + 결함 이미지 혼합
 - 정답 마스크(ground_truth/): 픽셀 단위 결함 위치 레이블
+```
 
 ### MVTec AD 2
 8종의 산업 품목이 추가된 확장 버전입니다.
-
+```
 | 품목 목록 |
 |-----------|
 | can, fabric, fruit_jelly, rice, sheet_metal, vial, wallplugs, walnuts |
 
 - 	est_private 등 다양한 분할(split) 존재
 - 이 프로젝트의 **2단계 하이브리드 파이프라인**은 MVTec AD 2의 주요 품목(can, ial, sheet_metal, wallplugs)을 핵심 타겟으로 설계됨
+```
 
 ### 데이터 경로 설정 (data.py)
 
-`python
+```python
 root = '/NHNHOME/WORKSPACE/26moel002_ex07/AD/Data'   # 서버 경로 (환경에 맞게 수정)
 PATH_TO_MVTEC_AD_1_FOLDER = root + '/OpenDataset/mvtec_ad_1'
 PATH_TO_MVTEC_AD_2_FOLDER = root + '/OpenDataset/mvtec_ad_2'
-`
+```
 
-> ⚠️ 로컬에서 실행하려면 data.py 상단의 oot 경로를 실제 데이터셋 경로로 수정해야 합니다.
+> ⚠️ 로컬에서 실행하려면 data.py 상단의  root 경로를 실제 데이터셋 경로로 수정해야 합니다.
 
 ---
 
@@ -164,7 +167,7 @@ PATH_TO_MVTEC_AD_2_FOLDER = root + '/OpenDataset/mvtec_ad_2'
 
 ### 실행 흐름
 
-`
+```
 main.py 실행
     │
     ├── 품목 선택 (all 또는 특정 품목명 입력)
@@ -180,10 +183,10 @@ main.py 실행
             ├── 2. SD 3.5 Large (img2img) 에 패딩 이미지 + 프롬프트 입력
             ├── 3. strength=0.3, guidance_scale=4.0, steps=50 으로 생성
             └── 4. gen_<품목>_<번호>.png 로 저장 + batch_metadata.json 기록
-`
+```
 
 ### 핵심 파라미터
-
+```
 | 파라미터 | 값 | 설명 |
 |----------|-----|------|
 | strength | 0.3 | 원본 이미지 변형 강도 (0.0 = 원본 그대로, 1.0 = 완전히 다른 이미지) |
@@ -192,6 +195,7 @@ main.py 실행
 um_inference_steps | 50 | 이미지 생성 반복 횟수 (높을수록 품질↑, 속도↓) |
 | seed | 42 | 재현 가능한 결과를 위한 난수 시드 |
 | 출력 해상도 | 1024×1024 | |
+```
 
 ### 사용 모델
 
@@ -211,12 +215,14 @@ um_inference_steps | 50 | 이미지 생성 반복 횟수 (높을수록 품질↑
 
 ### 왜 2단계인가?
 
+```
 | | Stage 1 (범용) | Stage 2 (스페셜리스트) |
 |--|---------------|----------------------|
 | 속도 | 빠름 | 느림 (품목 특화 시뮬레이션) |
 | 품질 | 보통 | 높음 (물리 기반 변형 반영) |
 | 품목 커버리지 | 전 품목 | can, vial, sheet_metal, wallplugs |
 | 활용 | 빠른 프로토타이핑, 전 품목 베이스라인 확보 | 고품질 학습 데이터 생성 |
+```
 
 ### 6.1 Stage 1 : 범용 베이스라인
 
@@ -225,7 +231,7 @@ um_inference_steps | 50 | 이미지 생성 반복 횟수 (높을수록 품질↑
 
 어떤 품목에도 적용 가능한 **범용 기하 마스크** 기반 증강입니다.
 
-`
+```
 Stage 1 동작 순서
     │
     ├── 1024×1024 캔버스에 타원형 객체 영역(Object Mask) 생성
@@ -238,23 +244,23 @@ Stage 1 동작 순서
     │       → 마스크 영역은 회색, 결함 부위는 붉은색 (R=200, G=50, B=50)
     │
     └── images/<sample_id>.png  + masks/<sample_id>_mask.png 쌍 저장
-`
+```
 
 **출력 경로**:
-`
+```
 <base_dir>/two_stage_hybrid_output/stage1_universal/<품목>/
     ├── images/   <품목>_s1_0001.png  ...
     └── masks/    <품목>_s1_0001_mask.png  ...
-`
+```
 
 ### 6.2 Stage 2 : 도메인 스페셜리스트
 
-**파일**: ug_hybrid/two_stage_hybrid_pipeline/stage2_*.py
+**파일**: aug_hybrid/two_stage_hybrid_pipeline/stage2_*.py
 
 각 품목의 **물리적 특성**을 수학 공식으로 모델링해 고품질 결함을 생성합니다.  
 모든 스페셜리스트는 아래 공통 4단계 구조를 따릅니다.
 
-`
+```
 1. 물체 기하 마스크(Object Mask) 생성
         ↓
 2. 물리 시뮬레이션으로 결함 위치·형태 결정 (GT Mask 생성)
@@ -262,14 +268,14 @@ Stage 1 동작 순서
 3. 재질 특성(금속 반사, 유리 굴절, 플라스틱 매트) 텍스처 합성
         ↓
 4. 초고해상도 업스케일(×2) + 가우시안 노이즈 추가 (SUPIR 효과 시뮬레이션)
-`
+```
 
 **출력 경로**:
-`
+```
 <base_dir>/two_stage_hybrid_output/stage2_specialized/<품목>/
     ├── images/   <품목>_sota_0001.png  ...
     └── masks/    <품목>_sota_0001_mask.png  ...
-`
+```
 
 ---
 
@@ -280,7 +286,7 @@ Stage 1 동작 순서
 데이터셋 경로 관리와 이미지 로딩을 담당하는 **데이터 레이어**입니다.
 
 #### RawDataset 클래스
-
+```
 | 메서드/속성 | 설명 |
 |------------|------|
 | __init__(dataset_name, object_name, split) | 데이터셋 종류, 품목명, 분할 종류를 받아 이미지 경로 목록 생성 |
@@ -288,7 +294,7 @@ Stage 1 동작 순서
 | get_image(idx) | idx 번째 이미지를 PIL Image로 반환 |
 | __len__() | 이미지 총 개수 반환 |
 | image_paths | 정렬된 이미지 경로 리스트 (property) |
-
+```
 MVTec AD 1 과 2의 디렉터리 구조가 다르기 때문에, get_image_path() 내부에서 데이터셋 종류와 split에 따라 glob 패턴을 분기합니다.
 
 #### PaddingImages 클래스
@@ -298,10 +304,10 @@ RawDataset을 상속하지만, 패딩 완료된 이미지 폴더를 관리합니
 
 #### 유틸리티 함수
 
-`python
+```python
 set_metadata_path(object_name)         # BLIP 캡션 메타데이터(.jsonl) 저장 경로 반환
 set_generated_image_path(model_name, object_name)  # 생성 이미지 저장 경로 생성 및 반환
-`
+```
 
 ---
 
@@ -312,7 +318,7 @@ set_generated_image_path(model_name, object_name)  # 생성 이미지 저장 경
 #### Processing 클래스
 
 RawDataset과 PaddingImages를 내부에 포함(composition)하는 고수준 클래스입니다.
-
+```
 | 메서드 | 설명 |
 |--------|------|
 | pad_image(idx) | 지정 인덱스 이미지를 letterbox 패딩해 1024×1024 로 저장 |
@@ -321,13 +327,13 @@ RawDataset과 PaddingImages를 내부에 포함(composition)하는 고수준 클
 | create_diffusers_metadata() | 캡션을 JSONL 형식으로 저장 (파인튜닝 용) |
 | generate_image_SDXL() | SDXL Refiner로 결함 이미지 생성 |
 | generate_image_SD35() | **SD 3.5 Large**로 결함 이미지 생성 (주 사용) |
-
+```
 #### Letterbox 패딩이란?
 
 원본 이미지의 **가로·세로 비율을 그대로 유지**하면서 1024×1024 정사각형으로 맞추는 기법입니다.  
 빈 공간은 흰색으로 채웁니다.
 
-`
+```
 원본 (640×480)                패딩 후 (1024×1024)
 ┌────────────────┐            ┌──────────────────────┐
 │                │            │  (흰색 여백 192px)   │
@@ -336,7 +342,7 @@ RawDataset과 PaddingImages를 내부에 포함(composition)하는 고수준 클
 └────────────────┘            │ └──────────────────┘ │
                               │  (흰색 여백 192px)   │
                               └──────────────────────┘
-`
+```
 
 ---
 
@@ -349,34 +355,36 @@ RawDataset과 PaddingImages를 내부에 포함(composition)하는 고수준 클
 일반적인 rom .module import Class 방식 대신 **importlib** 를 사용합니다.
 
 이유: 내부 스크립트(main.py, stage1_universal.py 등)가 서로를  
-rom stage1_universal import ... 처럼 **절대 이름으로 import**합니다.  
+from stage1_universal import ... 처럼 **절대 이름으로 import**합니다.  
 이를 패키지 내부에서 상대 import로 바꾸면 기존 코드를 수정해야 하므로,  
 __init__.py에서 해당 디렉터리를 sys.path에 등록한 뒤 importlib로 로드합니다.
 
-`python
+```python
 # __init__.py 핵심 동작
 sys.path.insert(0, str(_PIPELINE_DIR))    # 절대 import가 동작하도록 경로 등록
 _stage1 = _load_module("stage1_universal") # importlib로 파일 직접 로드
 Stage1UniversalAugmentor = _stage1.Stage1UniversalAugmentor  # 패키지 레벨로 노출
-`
+```
 
 #### main.py — 오케스트레이터
 
-un_two_stage_hybrid_pipeline(targets, num_stage1, num_stage2, base_dir) 함수가 핵심입니다.
+
+un_two_stage_hybrid_pipeline(targets, num_stage1, num_stage2, base_dir) 함수가 핵심입니다.
 
 1. Stage 1: 지정된 모든 품목에 대해 Stage1UniversalAugmentor.run_baseline_generation() 호출
-2. Stage 2: 품목명에 따라 해당 스페셜리스트 클래스를 선택해 un_specialized_generation() 호출
+2. Stage 2: 품목명에 따라 해당 스페셜리스트 클래스를 선택해 
+un_specialized_generation() 호출
 
 #### 스페셜리스트 클래스 공통 인터페이스
 
-`python
+```python
 class Stage2XxxSpecialist:
     def __init__(self, output_base_dir: str):
         # 출력 폴더 생성 (images/, masks/)
 
     def run_specialized_generation(self, count: int = 2):
         # count 개수만큼 (이미지, 마스크) 쌍 생성
-`
+```
 
 ---
 
@@ -384,7 +392,7 @@ class Stage2XxxSpecialist:
 
 기존 main.py를 수정하지 않고 하이브리드 파이프라인을 실행할 수 있는 **독립 진입점**입니다.
 
-`
+```
 hybrid_runner.py
     │
     ├── sys.path 에 프로젝트 루트 등록
@@ -393,7 +401,7 @@ hybrid_runner.py
     ├── run_stage1_only()   Stage 1만 실행
     ├── run_stage2_only()   Stage 2만 실행
     └── main()              argparse로 CLI 인자를 받아 적절한 함수 호출
-`
+```
 
 ---
 
@@ -477,23 +485,25 @@ cv2.ellipse(plug_mask, (w*0.35, h*0.4), (50, 120), 30, ...)  # 왼쪽 날개
 cv2.ellipse(plug_mask, (w*0.65, h*0.4), (50, 120), -30, ...) # 오른쪽 날개
 
 # 팁 하단 75% 이후 = 부러진 영역
+```
 gt_mask[int(h*0.75):, int(w*0.35):int(w*0.65)] = 255
-`
+```
 
+```
 | 시뮬레이션 요소 | 설명 |
 |----------------|------|
 | 앙카 형상 | 직사각형 바디 + 기울어진 타원 2개 (날개) |
 | 파손 위치 | 전체 높이 75% 이하 = 팁 부러짐 |
 | 백화 현상 | 파손 부위를 흰색(R=255, G=250, B=240)으로 표현 |
 | 매트 플라스틱 | 밝은 회색 베이스, 낮은 노이즈(σ=1.8) |
-
+```
 ---
 
 ## 9. 출력 결과 구조
 
 ### 파이프라인 A 출력 (SD 3.5)
 
-`
+```
 <root>/GenerateDataset/
 └── SD35/
     └── <품목>/
@@ -501,11 +511,11 @@ gt_mask[int(h*0.75):, int(w*0.35):int(w*0.65)] = 255
         ├── gen_<품목>_001.png
         ├── ...
         └── <품목>_batch_metadata.json   ← 각 이미지의 입력 경로·seed 기록
-`
+```
 
 ### 파이프라인 B 출력 (하이브리드)
 
-`
+```
 D:\KKCC_Project\two_stage_hybrid_output\
 │
 ├── stage1_universal/
@@ -522,7 +532,7 @@ D:\KKCC_Project\two_stage_hybrid_output\
     ├── vial/
     ├── sheet_metal/
     └── wallplugs/
-`
+```
 
 ---
 
@@ -536,7 +546,7 @@ D:\KKCC_Project\two_stage_hybrid_output\
 
 ### 패키지 설치
 
-`ash
+```bash
 # 가상환경 생성 (권장)
 python -m venv .venv
 .venv\Scripts\activate          # Windows
@@ -545,28 +555,29 @@ python -m venv .venv
 # 의존성 설치
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
 pip install diffusers transformers accelerate pillow opencv-python huggingface_hub
-`
+```
 
 ### HuggingFace 토큰 설정
 
 DataAugmentation/tokens.py 파일을 생성하고 아래 내용을 입력합니다.
 
-`python
+```
+python
 # tokens.py  (절대 Git에 커밋하지 마세요!)
 token = "hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-`
+```
 
-> ⚠️ 	okens.py 는 반드시 .gitignore 에 등록해야 합니다.
+> ⚠️tokens.py 는 반드시 .gitignore 에 등록해야 합니다.
 
 ### 데이터 경로 수정
 
-data.py 상단의 oot 변수를 실제 데이터셋 경로로 변경합니다.
+data.py 상단의 root 변수를 실제 데이터셋 경로로 변경합니다.
 
-`python
+```python
 # data.py
 root = 'D:/KKCC_Project'           # 예: 로컬 Windows 환경
 # root = '/home/user/datasets'     # 예: Linux 서버 환경
-`
+```
 
 ---
 
@@ -574,44 +585,60 @@ root = 'D:/KKCC_Project'           # 예: 로컬 Windows 환경
 
 ### 파이프라인 A — SD 3.5 기반 증강
 
-`ash
+```
+bash
 python main.py
-`
+````
 
 실행 후 프롬프트가 나타나면 품목명을 입력합니다.
 
-`
+````
 이미지 증강할 품목을 선택하시오.(all = 모든 품목 / object_name = 해당 품목
 > all          # 모든 품목 실행
 > can          # can 품목만 실행
-`
+```
 
 ---
 
 ### 파이프라인 B — 2단계 하이브리드 증강
 
-`ash
+```bash
 # 도움말 확인
+```
+
+```
 python hybrid_runner.py --help
+```
 
 # 기본 실행 (can, vial, sheet_metal, wallplugs / 전체 2단계 / 샘플 2개)
+```
 python hybrid_runner.py
+```
 
 # Stage 1만 실행 (전 품목)
+```
 python hybrid_runner.py --stage 1 --targets all
+```
 
 # Stage 2만, 특정 품목
+```
 python hybrid_runner.py --stage 2 --targets can vial
+```
 
 # 샘플 수 조정
+```
 python hybrid_runner.py --num_stage1 10 --num_stage2 5 --targets can sheet_metal
+```
 
 # 출력 경로 변경
+```
 python hybrid_runner.py --base_dir "E:\MyProject" --targets can
+```
 
 # 전 단계, 전 품목, 각 10개 샘플
+```
 python hybrid_runner.py --stage all --targets all --num_stage1 10 --num_stage2 10
-`
+```
 
 #### CLI 옵션 전체 목록
 
@@ -629,7 +656,7 @@ python hybrid_runner.py --stage all --targets all --num_stage1 10 --num_stage2 1
 
 ### 파이프라인 A (main.py)
 
-`
+```
 main.py
   └─ Processing.__init__(dataset, object, prompt)
         ├─ RawDataset(dataset, object, split)
@@ -645,11 +672,11 @@ main.py
               ├─ pipe(prompt, image, strength=0.3, ...) → generated_image
               ├─ generated_image.save(gen_<object>_<idx>.png)
               └─ batch_metadata[history].append({input, output, seed})
-`
+```
 
 ### 파이프라인 B (hybrid_runner.py)
 
-`
+```
 hybrid_runner.py
   └─ main()
         ├─ parse_args() → args (stage, targets, num_stage1, num_stage2, base_dir)
@@ -676,7 +703,7 @@ hybrid_runner.py
         └─ [stage == "all"] run_two_stage_hybrid_pipeline(...)
               ├─ Stage 1 전체 실행
               └─ Stage 2 전체 실행
-`
+```
 
 ---
 
@@ -706,21 +733,23 @@ class Stage2NewItemSpecialist:
             pass
 `
 
-2. ug_hybrid/two_stage_hybrid_pipeline/__init__.py 에 import 추가
+2. aug_hybrid/two_stage_hybrid_pipeline/__init__.py 에 import 추가
 
 `python
 _stage2n = _load_module("stage2_new_item_specialist")
 Stage2NewItemSpecialist = _stage2n.Stage2NewItemSpecialist
 `
 
-3. ug_hybrid/two_stage_hybrid_pipeline/main.py 의 un_two_stage_hybrid_pipeline() 에 분기 추가
+3. aug_hybrid/two_stage_hybrid_pipeline/main.py 의 
+un_two_stage_hybrid_pipeline() 에 분기 추가
 
 `python
 elif cat_lower == "new_item":
     Stage2NewItemSpecialist(out_base).run_specialized_generation(num_stage2)
 `
 
-4. hybrid_runner.py 의 un_stage2_only() 에도 동일하게 분기 추가
+4. hybrid_runner.py 의 
+un_stage2_only() 에도 동일하게 분기 추가
 
 ---
 
@@ -734,7 +763,7 @@ A. 파이프라인 A (main.py, process.py)는 	orch.cuda.is_available() 가 Fals
 A. DataAugmentation/tokens.py 파일을 직접 만들고 	oken = "hf_..." 를 추가하세요.  
 파이프라인 B는 토큰이 필요 없습니다.
 
-**Q. Stage 2에서 can, ial, sheet_metal, wallplugs 외 품목을 지정하면 어떻게 되나요?**  
+**Q. Stage 2에서 can, vial, sheet_metal, wallplugs 외 품목을 지정하면 어떻게 되나요?**  
 A. Stage 1 결과만 사용하도록 경고 메시지가 출력되고 넘어갑니다. 새 스페셜리스트를 직접 추가해서 확장할 수 있습니다.
 
 **Q. data.py의 경로를 바꿔야 하는데 다른 사람도 쓰는 코드라 수정하기 어려워요.**  
