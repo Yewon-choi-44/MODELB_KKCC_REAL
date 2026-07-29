@@ -9,6 +9,8 @@ __pycache__/
 *.jsonl
 docs/
 torch_check.py
+main copy.py
+
 openDataSet/mvtec_ad_1/
 openDataSet/mvtec_ad_2/
 agu_img/
