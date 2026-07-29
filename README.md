@@ -676,7 +676,7 @@ main.py
 
 ### 파이프라인 B (hybrid_runner.py)
 
-`
+``
 hybrid_runner.py
   └─ main()
         ├─ parse_args() → args (stage, targets, num_stage1, num_stage2, base_dir)
@@ -703,7 +703,7 @@ hybrid_runner.py
         └─ [stage == "all"] run_two_stage_hybrid_pipeline(...)
               ├─ Stage 1 전체 실행
               └─ Stage 2 전체 실행
-`
+``
 
 ---
 
