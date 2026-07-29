@@ -676,7 +676,7 @@ main.py
 
 ### 파이프라인 B (hybrid_runner.py)
 
-```
+`
 hybrid_runner.py
   └─ main()
         ├─ parse_args() → args (stage, targets, num_stage1, num_stage2, base_dir)
@@ -703,7 +703,7 @@ hybrid_runner.py
         └─ [stage == "all"] run_two_stage_hybrid_pipeline(...)
               ├─ Stage 1 전체 실행
               └─ Stage 2 전체 실행
-```
+`
 
 ---
 
@@ -711,7 +711,7 @@ hybrid_runner.py
 
 ### 새 품목 스페셜리스트 추가하기
 
-1. ug_hybrid/two_stage_hybrid_pipeline/ 에 stage2_<품목>_specialist.py 파일 생성
+1. aug_hybrid/two_stage_hybrid_pipeline/ 에 stage2_<품목>_specialist.py 파일 생성
 
 `python
 # stage2_new_item_specialist.py
