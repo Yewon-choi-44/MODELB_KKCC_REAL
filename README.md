@@ -644,8 +644,8 @@ python hybrid_runner.py --stage all --targets all --num_stage1 10 --num_stage2 1
 
 | 옵션 | 기본값 | 설명 |
 |------|--------|------|
-| --stage | ll | 실행 단계 (1, 2, ll) |
-| --targets | can vial sheet_metal wallplugs | 대상 품목 목록 (공백 구분, ll 입력 시 전 품목) |
+| --stage | all | 실행 단계 (1, 2, all) |
+| --targets | can vial sheet_metal wallplugs | 대상 품목 목록 (공백 구분, all 입력 시 전 품목) |
 | --num_stage1 | 2 | Stage 1 품목당 생성 샘플 수 |
 | --num_stage2 | 2 | Stage 2 품목당 생성 샘플 수 |
 | --base_dir | D:\KKCC_Project | 출력 루트 디렉터리 |
@@ -676,7 +676,7 @@ main.py
 
 ### 파이프라인 B (hybrid_runner.py)
 
-``
+```
 hybrid_runner.py
   └─ main()
         ├─ parse_args() → args (stage, targets, num_stage1, num_stage2, base_dir)
@@ -703,7 +703,7 @@ hybrid_runner.py
         └─ [stage == "all"] run_two_stage_hybrid_pipeline(...)
               ├─ Stage 1 전체 실행
               └─ Stage 2 전체 실행
-``
+```
 
 ---
 
